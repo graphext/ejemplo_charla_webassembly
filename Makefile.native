@@ -1,0 +1,49 @@
+
+EXEC = example
+BINDIR = bin
+IDLDIR = idl
+OBJDIR = obj
+SRCDIR = src
+INCLUDEDIR = include
+LIBDIR = lib
+DEBUG = 0
+
+ifeq ($(DEBUG), 1)
+	DEBUG_FLAGS = -g3 -O1
+else
+	DEBUG_FLAGS = -static -static-libstdc++ -static-libgcc -O3 -flto -fno-fat-lto-objects
+endif
+
+CC = gcc
+CXX = g++
+AR = ar
+COMMON_FLAGS = -Wpedantic -Werror -Wall -Wno-unknown-pragmas $(DEBUG_FLAGS) -ffast-math -fdiagnostics-color=auto
+CFLAGS = $(COMMON_FLAGS) -I$(INCLUDEDIR) -std=c17
+CPPFLAGS = $(COMMON_FLAGS) -I$(INCLUDEDIR) -std=c++17
+LD = $(CXX)
+LDFLAGS = $(COMMON_FLAGS) -L$(LIBDIR) -llzip
+
+OBJS=$(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(shell find $(SRCDIR) -name '*.c'))
+OBJS+=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(shell find $(SRCDIR) -name '*.cpp'))
+
+uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+OBJDIRS=$(call uniq,$(dir $(OBJS)))
+
+$(BINDIR)/$(EXEC):	$(OBJDIRS) $(OBJS) $(LIBDIR)/liblzip.a
+	$(LD) -o $@ $(filter-out $(wildcard */**/*.a),$(OBJS)) $(LDFLAGS)
+	@echo "Compiled successfully"
+
+$(OBJDIRS):
+	mkdir -p $@
+
+$(OBJDIR)/%.o:	$(SRCDIR)/%.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(OBJDIR)/%.o:	$(SRCDIR)/%.cpp
+	$(CXX) -c $(CPPFLAGS) $< -o $@
+
+$(LIBDIR)/liblzip.a:
+	cd $(INCLUDEDIR)/lzip/; make CC="$(CC)" AR="$(AR)"
+
+clean:
+	rm -rf $(LIBDIR)/* $(OBJDIR)/* $(BINDIR)/$(EXEC)

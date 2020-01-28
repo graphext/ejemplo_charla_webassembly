@@ -1,0 +1,6 @@
+interface VectorString {
+	void VectorString(unsigned long size);
+	[Const] DOMString at(unsigned long i);
+	void set(unsigned long i, DOMString str);
+	unsigned long size();
+};

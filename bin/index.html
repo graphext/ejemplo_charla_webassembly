@@ -1,0 +1,19 @@
+<head>
+	<meta charset="UTF-8">
+</head>
+<body>
+
+<script type="text/javascript" src="example.js"></script>
+<script type="text/javascript">
+	window.addEventListener('WasmLoaded', () => {
+		const wasm = window.Module;
+		const v = new wasm.VectorString(3);
+		v.set(0, "Hola ");
+		v.set(1, "Mundo");
+		v.set(2, "!");
+		for(let i = 0; i < v.size(); i++) {
+			console.log(v.at(i));
+		}
+		wasm.destroy(v);
+	});
+</script>

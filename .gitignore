@@ -1,0 +1,14 @@
+bin/*.js
+bin/*.ts
+bin/*.wasm*
+bin/*.wast
+idl/*.js
+idl/*.ts
+idl/*.cpp
+types/**/*.ts
+obj/*.o
+lib/*.a
+node_modules/*
+yarn-error.log
+emscripten_data
+.vscode/ipch
