@@ -6,7 +6,7 @@ OBJDIR = obj
 SRCDIR = src
 INCLUDEDIR = include
 LIBDIR = lib
-DEBUG = 1
+DEBUG = 0
 
 EMCC_WASM_BACKEND=1
 TOTAL_MEMORY=16MB
@@ -63,5 +63,5 @@ $(LIBDIR)/liblzip.a:
 	cd $(INCLUDEDIR)/lzip/; $(ENV_VARS) make CC="$(CC)" AR="$(AR)" CFLAGS="$(COMMON_FLAGS)"
 
 
-clean:	
+clean:
 	rm -rf $(LIBDIR)/* $(OBJDIR)/* $(IDLDIR)/*.cpp $(IDLDIR)/*.js $(BINDIR)/$(EXEC).js* $(BINDIR)/$(EXEC).wasm* $(BINDIR)/$(EXEC).wast

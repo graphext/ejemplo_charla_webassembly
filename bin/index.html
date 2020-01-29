@@ -5,15 +5,27 @@
 
 <script type="text/javascript" src="example.js"></script>
 <script type="text/javascript">
+	// window.addEventListener('WasmLoaded', () => {
+	// 	const wasm = window.Module;
+	// 	const v = new wasm.VectorString(3);
+	// 	v.set(0, "Hola ");
+	// 	v.set(1, "Mundo");
+	// 	v.set(2, "!");
+	// 	for(let i = 0; i < v.size(); i++) {
+	// 		console.log(v.at(i));
+	// 	}
+	// 	wasm.destroy(v);
+	// });
 	window.addEventListener('WasmLoaded', () => {
 		const wasm = window.Module;
-		const v = new wasm.VectorString(3);
-		v.set(0, "Hola ");
-		v.set(1, "Mundo");
-		v.set(2, "!");
-		for(let i = 0; i < v.size(); i++) {
-			console.log(v.at(i));
-		}
-		wasm.destroy(v);
+		fetch('prueba.lz').then(r => r.arrayBuffer()).then(r => {
+			const data = new Uint8Array(r);
+			const decoder = new wasm.LZipDecoder(data, r.byteLength);
+			const uncompressedSize = decoder.getUncompressedSize();
+			console.log(decoder.getCompressedSize());
+			console.log(uncompressedSize);
+			//console.log(decoder.getUncompressedAsCString());
+			wasm.destroy(decoder);
+		});
 	});
 </script>

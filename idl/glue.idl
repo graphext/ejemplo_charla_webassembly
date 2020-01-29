@@ -4,3 +4,10 @@ interface VectorString {
 	void set(unsigned long i, DOMString str);
 	unsigned long size();
 };
+
+interface LZipDecoder {
+	void LZipDecoder([Const] byte[] data, unsigned long size);
+	unsigned long getCompressedSize();
+	unsigned long getUncompressedSize();
+	[Const] DOMString getUncompressedAsCString();
+};

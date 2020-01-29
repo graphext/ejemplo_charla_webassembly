@@ -6,9 +6,10 @@
 
 class LZipDecoder {
 	public:
-		LZipDecoder(const uint8_t* data, const uint32_t sizeIn);
+		LZipDecoder(const char* data, const uint32_t sizeIn);
 		uint32_t getCompressedSize() const { return compressedSize; }
 		uint32_t getUncompressedSize() const { return uncompressedSize; }
+		const char* getUncompressedAsCString() const { return reinterpret_cast<const char*>(uncompressedData.get()); }
 
 	private:
 		uint32_t compressedSize = 0;
