@@ -5,6 +5,7 @@
 
 <script type="text/javascript" src="example.js"></script>
 <script type="text/javascript">
+	// Ejemplo 1
 	// window.addEventListener('WasmLoaded', () => {
 	// 	const wasm = window.Module;
 	// 	const v = new wasm.VectorString(3);
@@ -16,15 +17,18 @@
 	// 	}
 	// 	wasm.destroy(v);
 	// });
+
+	// Ejemplo 2
 	window.addEventListener('WasmLoaded', () => {
 		const wasm = window.Module;
-		fetch('prueba.lz').then(r => r.arrayBuffer()).then(r => {
+		fetch('prueba2.csv').then(r => r.arrayBuffer()).then(r => {
 			const data = new Uint8Array(r);
-			const decoder = new wasm.LZipDecoder(data, r.byteLength);
-			const uncompressedSize = decoder.getUncompressedSize();
+			const encoder = new wasm.LZipEncoder(data, r.byteLength);
+			const decoder = new wasm.LZipDecoder(encoder.getJsPtr(), encoder.getCompressedSize());
 			console.log(decoder.getCompressedSize());
-			console.log(uncompressedSize);
+			console.log(decoder.getUncompressedSize());
 			//console.log(decoder.getUncompressedAsCString());
+			wasm.destroy(encoder);
 			wasm.destroy(decoder);
 		});
 	});
