@@ -1,0 +1,7 @@
+WASM:
+    Compression: 252MB -> 14MB (ratio: 0.0540684, time: 20607ms)
+    Decompression: 14MB -> 252MB (ratio: 0.0540684, time: 1802ms)
+
+Native:
+    Compression: 252MB -> 14MB (ratio: 0.0540684, time: 17748ms)
+    Decompression: 14MB -> 252MB (ratio: 0.0540684, time: 1618ms)
