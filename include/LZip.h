@@ -24,7 +24,9 @@ class LZipEncoder {
 		uint32_t getCompressedSize() const { return compressedData.size(); }
 		uint32_t getUncompressedSize() const { return uncompressedSize; }
 		const char* getCompressedData() const { return reinterpret_cast<const char*>(compressedData.data()); }
+		#if __EMSCRIPTEN__
 		uint32_t getJsPtr() const { return reinterpret_cast<uint32_t>(compressedData.data()); };
+		#endif
 
 	private:
 		uint32_t uncompressedSize = 0;

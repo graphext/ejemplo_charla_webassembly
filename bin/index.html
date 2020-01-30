@@ -1,7 +1,9 @@
+<html>
 <head>
 	<meta charset="UTF-8">
 </head>
 <body>
+Compressing
 
 <script type="text/javascript" src="example.js"></script>
 <script type="text/javascript">
@@ -30,6 +32,9 @@
 			//console.log(decoder.getUncompressedAsCString());
 			wasm.destroy(encoder);
 			wasm.destroy(decoder);
+			document.body.innerText = "Finished!";
 		});
 	});
 </script>
+</body>
+</html>
