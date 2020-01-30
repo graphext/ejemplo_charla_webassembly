@@ -1,0 +1,23 @@
+version: '3'
+services:
+  emcc:
+    image: emcc
+    build:
+      context: .
+    environment:
+      BUILD_MODE: development
+    command: make clean && make
+    volumes:
+     - ./emscripten_data:/emscripten_data
+     - .:/src
+
+  nginx:
+    image: nginx:alpine
+    command: |-
+      sh -c 'sed -i "3i application/wasm wasm;" /etc/nginx/mime.types \
+      && sed -i "15i gzip_static on;" /etc/nginx/nginx.conf \
+      && nginx -g "daemon off;"'
+    volumes:
+     - ./bin:/usr/share/nginx/html
+    ports:
+     - 8082:80
