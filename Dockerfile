@@ -1,6 +1,6 @@
 FROM debian:10-slim
 
-ENV EM_VERSION=1.39.6
+ENV EM_VERSION=1.39.10
 ENV EM_DIR=/emsdk/upstream/emscripten
 ENV EM_CACHE='/emscripten_data/cache'
 ENV LC_ALL C.UTF-8

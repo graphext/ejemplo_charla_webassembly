@@ -17,7 +17,7 @@ ifeq ($(DEBUG), 1)
 	DEBUG_FLAGS = -g4 -O1 --memoryprofiler -s ASSERTIONS=2 -s ALIASING_FUNCTION_POINTERS=0 \
 		-s SAFE_HEAP=1 -s DEMANGLE_SUPPORT=1 --source-map-base http://localhost:8082/ # -fsanitize=undefined
 else
-	DEBUG_FLAGS = -O3 --llvm-lto 3 -s WASM_OBJECT_FILES=0 -s ASSERTIONS=0 \
+	DEBUG_FLAGS = -O3 --llvm-lto 3 -s ASSERTIONS=0 \
 		-DGLOBAL_LOG_LEVEL=INFO
 endif
 
