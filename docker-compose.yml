@@ -6,7 +6,7 @@ services:
       context: .
     environment:
       BUILD_MODE: development
-    command: make clean && make
+    command: sh -c "make clean && make"
     volumes:
      - ./emscripten_data:/emscripten_data
      - .:/src

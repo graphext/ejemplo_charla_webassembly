@@ -1,3 +1,8 @@
+ifeq (, $(shell which python3))
+	PYTHON = python
+else
+	PYTHON = python3
+endif
 
 EXEC = example
 BINDIR = bin
@@ -8,32 +13,48 @@ INCLUDEDIR = include
 LIBDIR = lib
 DEBUG = 0
 
-EMCC_WASM_BACKEND=1
-TOTAL_MEMORY=16MB
+INITIAL_MEMORY=16MB
+MAXIMUM_MEMORY=2GB
 TOTAL_STACK=1MB
-MEMORY_GROWTH_STEP=-1
+MEMORY_GROWTH_GEOMETRIC_STEP=0.20
+MEMORY_GROWTH_GEOMETRIC_CAP=96MB
 
 ifeq ($(DEBUG), 1)
-	DEBUG_FLAGS = -g4 -O1 --memoryprofiler -s ASSERTIONS=2 -s ALIASING_FUNCTION_POINTERS=0 \
-		-s SAFE_HEAP=1 -s DEMANGLE_SUPPORT=1 --source-map-base http://localhost:8082/ # -fsanitize=undefined
+# SAFE_HEAP=1 produces stack overflow
+	DEBUG_COMP_FLAGS = -gsource-map -O2 --memoryprofiler # -fsanitize=undefined
+	DEBUG_LD_FLAGS = -sASSERTIONS=2 -sSTACK_OVERFLOW_CHECK=2 \
+		-Wno-limited-postlink-optimizations \
+		-sSAFE_HEAP=1 -sDEMANGLE_SUPPORT=1 --source-map-base http://localhost:8082/
 else
-	DEBUG_FLAGS = -O3 --llvm-lto 3 -s WASM_OBJECT_FILES=0 -s ASSERTIONS=0 \
-		-DGLOBAL_LOG_LEVEL=INFO
+	DEBUG_COMP_FLAGS = -O3 -flto=full -fwhole-program-vtables -fvisibility=hidden
+	DEBUG_LD_FLAGS = -sASSERTIONS=0 --lto-whole-program-visibility
 endif
 
-ENV_VARS = EMCC_WASM_BACKEND=$(EMCC_WASM_BACKEND)
 CC = emcc
 CXX = em++
-AR = emar
-COMMON_FLAGS = -Werror -Wall $(DEBUG_FLAGS) -fdiagnostics-color=auto \
-	 -Wcast-align -Wover-aligned -s WARN_UNALIGNED=1 \
-	 -s WASM=1 -s STRICT=1 -s ALLOW_MEMORY_GROWTH=1 \
-	 -s DISABLE_EXCEPTION_CATCHING=1 -s NO_EXIT_RUNTIME=1 -s NO_FILESYSTEM=1 -fno-rtti \
-	 -s TOTAL_MEMORY=$(TOTAL_MEMORY) -s TOTAL_STACK=$(TOTAL_STACK)
-CFLAGS = $(COMMON_FLAGS) -I$(INCLUDEDIR) -I$(IDLDIR) -std=c17
-CPPFLAGS = $(COMMON_FLAGS) -I$(INCLUDEDIR) -I$(IDLDIR) -std=c++17
 LD = $(CXX)
-LDFLAGS = $(COMMON_FLAGS) -L$(LIBDIR) --post-js $(IDLDIR)/glue.js -llzip
+AR = emar
+COMMON_FLAGS = -Werror -Wall $(DEBUG_COMP_FLAGS) -fdiagnostics-color=auto \
+	 -Wcast-align -Wover-aligned -Wno-legacy-settings \
+	 -Wno-dollar-in-identifier-extension \
+	 -sSTRICT=1 -DEMSCRIPTEN=1 \
+	 -fexceptions -sDISABLE_EXCEPTION_CATCHING=1 \
+	 -fno-rtti -fno-strict-aliasing \
+	 -DNDEBUG
+CFLAGS = $(COMMON_FLAGS) -I$(INCLUDEDIR) -I$(IDLDIR) -std=c18
+CPPFLAGS = $(COMMON_FLAGS) -I$(INCLUDEDIR) -I$(IDLDIR) -std=c++20
+LDFLAGS = $(COMMON_FLAGS) $(DEBUG_LD_FLAGS) -L$(LIBDIR) --post-js $(IDLDIR)/glue.js \
+	-sLLD_REPORT_UNDEFINED -sALLOW_UNIMPLEMENTED_SYSCALLS \
+	-sENVIRONMENT=web \
+	-sBINARYEN_EXTRA_PASSES=--one-caller-inline-max-function-size=20 \
+	-sNO_EXIT_RUNTIME=1 -sNO_FILESYSTEM=1 -sSUPPORT_ERRNO=0 \
+	-sTEXTDECODER=2 \
+	-sALLOW_MEMORY_GROWTH=1 \
+	-sINITIAL_MEMORY=$(INITIAL_MEMORY) -sMAXIMUM_MEMORY=$(MAXIMUM_MEMORY) -sTOTAL_STACK=$(TOTAL_STACK) \
+	-sMEMORY_GROWTH_GEOMETRIC_STEP=$(MEMORY_GROWTH_GEOMETRIC_STEP) -sMEMORY_GROWTH_GEOMETRIC_CAP=$(MEMORY_GROWTH_GEOMETRIC_CAP) \
+	-sDECLARE_ASM_MODULE_EXPORTS=0 \
+	-sEXPORTED_FUNCTIONS=['_main','_malloc','_free'] \
+	-llzip
 
 IDLS=$(patsubst $(IDLDIR)/%.idl,$(IDLDIR)/%.cpp,$(wildcard $(IDLDIR)/*.idl))
 OBJS=$(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(shell find $(SRCDIR) -name '*.c'))
@@ -51,7 +72,7 @@ $(OBJDIRS):
 	mkdir -p $@
 
 $(IDLDIR)/%.cpp: $(IDLDIR)/%.idl
-	IDL_CHECKS="ALL#DEFAULT" python "${EM_DIR}"/tools/webidl_binder.py $< $(IDLDIR)/$*; rm parser.out WebIDLGrammar.pkl
+	IDL_CHECKS="DEFAULT" $(PYTHON) "$(EM_DIR)"/tools/webidl_binder.py $< $(IDLDIR)/$*
 
 $(OBJDIR)/%.o:	$(SRCDIR)/%.c
 	$(ENV_VARS) $(CC) -c $(CFLAGS) $< -o $@

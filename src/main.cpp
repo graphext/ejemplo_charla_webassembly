@@ -9,7 +9,7 @@
 #endif
 
 #ifdef __EMSCRIPTEN__
-int main(int argc, char** argv) {
+int main() {
 	EM_ASM(
 		window.dispatchEvent(new CustomEvent("WasmLoaded"))
 	);

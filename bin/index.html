@@ -23,12 +23,12 @@ Compressing
 	// Ejemplo 2
 	window.addEventListener('WasmLoaded', () => {
 		const wasm = window.Module;
-		fetch('prueba2.csv').then(r => r.arrayBuffer()).then(r => {
+		fetch('sample3.txt').then(r => r.arrayBuffer()).then(r => {
 			const data = new Uint8Array(r);
 			const encoder = new wasm.LZipEncoder(data, r.byteLength);
 			const decoder = new wasm.LZipDecoder(encoder.getJsPtr(), encoder.getCompressedSize());
-			console.log(decoder.getCompressedSize());
-			console.log(decoder.getUncompressedSize());
+			console.log('Compressed size: ' + decoder.getCompressedSize());
+			console.log('Uncompressed size: ' + decoder.getUncompressedSize());
 			//console.log(decoder.getUncompressedAsCString());
 			wasm.destroy(encoder);
 			wasm.destroy(decoder);
